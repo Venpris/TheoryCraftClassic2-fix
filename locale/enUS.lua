@@ -338,6 +338,7 @@ TheoryCraft_Locale = {
 	Attack		= "Attack",
 	InstantCast	= "Instant cast",
 	SecCast		= " sec cast",
+	Channeled	= SPELL_CAST_CHANNELED or "Channeled",
 	Mana		= " Mana",
 	Cooldown	= " sec cooldown",
 	CooldownRem	= "Cooldown remaining: ",

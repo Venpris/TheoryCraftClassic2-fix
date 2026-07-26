@@ -371,6 +371,7 @@ TheoryCraft_Locale = {
 	Attack		= "Angreifen",
 	InstantCast	= "Spontanzauber",
 	SecCast		= " Sek Zauber",
+	Channeled	= SPELL_CAST_CHANNELED or "Channeled",
 	Mana		= " Mana",
 	Cooldown	= " Sek. Abklingzeit",
 	CooldownRem	= "Verbleibende Abklingzeit: ",

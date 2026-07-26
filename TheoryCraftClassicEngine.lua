@@ -1516,10 +1516,14 @@ function TheoryCraft_GenerateSpellData(spellId)
 		end
 		--]]
 
-		TheoryCraft_TooltipData[spellId]["basecasttimeseconds"] = castTime / 1000
-		TheoryCraft_TooltipData[spellId]["basecasttime"] = (castTime / 1000).." sec cast" -- 3 sec, Instant Cast vs 3000, 0
-		if ((castTime / 1000) == 0) then
-			TheoryCraft_TooltipData[spellId]["basecasttime"] = "Instant cast"
+		local castTimeSeconds = math.max(0, castTime / 1000)
+		TheoryCraft_TooltipData[spellId]["basecasttimeseconds"] = castTimeSeconds
+		if spellData.channeled then
+			TheoryCraft_TooltipData[spellId]["basecasttime"] = TheoryCraft_Locale.Channeled or "Channeled"
+		elseif castTimeSeconds == 0 then
+			TheoryCraft_TooltipData[spellId]["basecasttime"] = TheoryCraft_Locale.InstantCast or "Instant cast"
+		else
+			TheoryCraft_TooltipData[spellId]["basecasttime"] = castTimeSeconds .. (TheoryCraft_Locale.SecCast or " sec cast")
 		end
 		--print(castTime)
 		--print(tonumber(TheoryCraft_TooltipData[spellId]["basecasttime"]))

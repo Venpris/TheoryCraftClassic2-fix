@@ -476,10 +476,14 @@ function TheoryCraft_getMinMax(spelldata, returndata, frame)
 		local _
 		TheoryCraft_DeleteTable(data)
 		local found
-		for k, pattern in pairs(a) do
-			if strfind(returndata["description"], pattern.pattern) then
-				_, _, data[1], data[2], data[3], data[4], data[5], data[6] = strfind(returndata["description"], pattern.pattern)
-				for k, t in pairs(pattern.type) do
+		local matchStart, matchEnd
+		local originalData = {}
+		for _, pattern in ipairs(a) do
+			matchStart, matchEnd, data[1], data[2], data[3], data[4], data[5], data[6] =
+				strfind(returndata["description"], pattern.pattern)
+			if matchStart then
+				for k, t in ipairs(pattern.type) do
+					originalData[k] = data[k]
 					if t == "bothdamage" then
 						returndata["mindamage"] = tonumber(data[k])
 						returndata["maxdamage"] = tonumber(data[k])
@@ -497,14 +501,7 @@ function TheoryCraft_getMinMax(spelldata, returndata, frame)
 		end
 		if found == nil then return end
 
-		local counter = 0
-		local function replacer()
-			counter = counter + 1
-			return data[counter]
-		end
-
-			
-		for k, t in pairs(found.type) do
+		for k, t in ipairs(found.type) do
 			if t == "bothdamage" then
 				data[k] = round(returndata["mindamage"])
 			elseif t == "dotbothdamage" then
@@ -590,7 +587,35 @@ function TheoryCraft_getMinMax(spelldata, returndata, frame)
 			returndata["maxheal"] = returndata["maxdamage"]+returndata["maxdamage"]*returndata["illum"]*baseincrease
 		end
 
-		returndata["description"] = string.gsub(returndata["description"], found.pattern, string.gsub(found.pattern, "(%(.-%))", replacer), 1)
+		-- Rebuild the exact text that matched instead of rebuilding from the Lua
+		-- pattern. Pattern metacharacters such as "." are not necessarily literal
+		-- characters from the original description; treating them as text changed
+		-- "Fire damage over" into "Fire damage.over", for example.
+		local matchedText = string.sub(returndata["description"], matchStart, matchEnd)
+		local rebuiltText = {}
+		local cursor = 1
+		local validMatch = true
+		for k = 1, #found.type do
+			local capturedText = originalData[k]
+			local captureStart, captureEnd
+			if capturedText ~= nil then
+				captureStart, captureEnd = string.find(matchedText, capturedText, cursor, true)
+			end
+			if captureStart == nil then
+				validMatch = false
+				break
+			end
+			rebuiltText[#rebuiltText + 1] = string.sub(matchedText, cursor, captureStart - 1)
+			rebuiltText[#rebuiltText + 1] = tostring(data[k] or "")
+			cursor = captureEnd + 1
+		end
+		if validMatch then
+			rebuiltText[#rebuiltText + 1] = string.sub(matchedText, cursor)
+			returndata["description"] =
+				string.sub(returndata["description"], 1, matchStart - 1) ..
+				table.concat(rebuiltText) ..
+				string.sub(returndata["description"], matchEnd + 1)
+		end
 
 	end
 
